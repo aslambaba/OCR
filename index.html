@@ -1,101 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Webcam OCR</title>
-    <script type="text/javascript" src="https://unpkg.com/webcam-easy/dist/webcam-easy.min.js"></script>
-    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
 
-  </head>
-  <body>
-    <h1>Webcam OCR</h1>
-    <video id="webcam" autoplay playsinline width="640" height="480"></video>
-    <canvas id="canvas" class="d-none"></canvas>
-    <audio id="snapSound" src="audio/snap.wav" preload="auto"></audio>
-    <button onclick="captureImage()">Capture Image</button>
-    <input type="file" id="imageInput" accept="image/*" />
-    <button onclick="uploadImage()">Upload Image</button>
-    <div id="result"></div>
-    <script>
-      // Modify captureImage function to use webcam-easy
-      function captureImage() {
-        // Take a photo from the webcam
-        let picture = webcam.snap();
-        console.log('Captured Image:', picture);
-
-        // Process the captured image using Tesseract.js
-        Tesseract.recognize(
-          picture,
-          "eng",
-          { 
-            logger: (info) => console.log(info) ,
-            rotate: 180, 
-            oem: 1,
-            psm: 6,
-          }
-        )
-          .then(({ data: { text } }) => {
-            const words = text.split(/\s+/).filter((word) => word.length >= 2);
-
-            // Display the OCR result
-            document.getElementById("result").innerText = words;
-          })
-          .catch((error) => {
-            console.error("Error performing OCR:", error);
-          });
-      }
-
-      // Initialize webcam-easy
-      const webcamElement = document.getElementById("webcam");
-      const canvasElement = document.getElementById("canvas");
-      const snapSoundElement = document.getElementById("snapSound");
-      const webcam = new Webcam(webcamElement, 'user', canvasElement, snapSoundElement);
-
-
-      // Start the webcam
-      webcam
-        .start()
-        .then((result) => {
-          console.log("Webcam started");
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-
-      function uploadImage() {
-        const input = document.getElementById("imageInput");
-        const file = input.files[0];
-
-        if (file) {
-          const reader = new FileReader();
-
-          reader.onload = (event) => {
-            const imageBase64 = event.target.result;
-
-            // Process the uploaded image using Tesseract.js
-            Tesseract.recognize(
-              imageBase64,
-              "eng",
-              { logger: (info) => console.log(info) , 
-            oem: 1,
-            psm: 6, }
-            )
-              .then(({ data: { text } }) => {
-                const words = text.split(/\s+/).filter((word) => word.length >= 2);
-                // Display the OCR result
-                document.getElementById("result").innerText = words;
-              })
-              .catch((error) => {
-                console.error("Error performing OCR:", error);
-              });
-          };
-
-          reader.readAsDataURL(file);
-        } else {
-          console.error("No file selected");
+<head>
+    <meta charset="UTF-8">
+    <title>Computer Vision with Javascript</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        video,
+        img {
+            max-width: 100%;
         }
-      }
+
+        #overlayCanvas {
+            /* position: absolute; */
+            top: 0;
+            left: 0;
+			z-index: 4;
+        }
+
+		.highlight-area {
+			position: absolute;
+			border: 2px solid red;
+			top: 70px;
+			left: 150px;
+			width: 150px;
+			height: 200px;
+		}
+    </style>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+    <script src='https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js'></script>
+    <script async src="https://use.fontawesome.com/d8c77f8373.js"></script>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark ">
+        <a class="navbar-brand" href="#">Computer Vision - OCR on Web</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse float-right" id="navbarNavAltMarkup">
+            <div class="navbar-nav ">
+                <a class="nav-item nav-link" href="https://github.com/prashant-andani/ocr-javascript"><i class="fa fa-lg fa-github"></i> Github</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row">
+        </div>
+
+        <div class="row">
+            <div class="col-md-6" id="main">
+                <!-- Access to camera and recognize content -->
+                <div class="alert alert-primary"><i class="fa fa-camera fa-lg"></i> Recognize camera content
+                    <button id="btnCameraAccess" class="float-right btn btn-danger btn-sm">Access Camera</button>
+                </div>
+				<div style="position: relative;">
+					<video style="position: relative;" autoplay></video>
+					<div class="highlight-area"></div>
+				</div>
+
+
+                <button type="button" id="recgBtn" class="btn btn-primary btn-lg btn-block" style="display:none">Recognize</button>
+                <!-- Add a canvas for highlighting the rectangular area -->
+            </div>
+            <div class="col-md-6">
+                <!-- Upload Image and recognize -->
+                <div class="alert alert-primary"><i class="fa fa-image fa-lg"></i> Recognize image content
+                </div>
+                <input id="uploadInput" type="file" />
+                <div id="imageContainer">
+                    <img id="image" src="" alt="" style="max-height: 300px;" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div id="result" class="jumbotron">
+                    Scanned content will be displayed here
+                </div>
+                <div id="confidence" class="alert alert-success">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar fixed-bottom navbar-light bg-dark">
+        <a class="" href="http://tesseract.projectnaptha.com/">Built with <i class="fa fa-heart fa-lg"></i> using Tesseract</a>
+    </nav>
+    <script async src="https://docs.opencv.org/master/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+
+    <script src="./main.js"></script>
+    <script>
+        function onOpenCvReady() {
+            cv['onRuntimeInitialized'] = () => {
+                // opencv.js is ready
+            };
+        }
     </script>
-  </body>
+
+</body>
+
 </html>
