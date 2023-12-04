@@ -50,7 +50,7 @@
       const webcamElement = document.getElementById("webcam");
       const canvasElement = document.getElementById("canvas");
       const snapSoundElement = document.getElementById("snapSound");
-      const webcam = new Webcam(webcamElement, 'user', canvasElement, snapSoundElement);
+      const webcam = new Webcam(webcamElement, { facingMode: "environment" }, 'user', canvasElement, snapSoundElement);
 
 
       // Start the webcam
