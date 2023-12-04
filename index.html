@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Webcam OCR</title>
+    <script type="text/javascript" src="https://unpkg.com/webcam-easy/dist/webcam-easy.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+
+  </head>
+  <body>
+    <h1>Webcam OCR</h1>
+    <video id="webcam" autoplay playsinline width="640" height="480"></video>
+    <canvas id="canvas" class="d-none"></canvas>
+    <audio id="snapSound" src="audio/snap.wav" preload="auto"></audio>
+    <button onclick="captureImage()">Capture Image</button>
+    <input type="file" id="imageInput" accept="image/*" />
+    <button onclick="uploadImage()">Upload Image</button>
+    <div id="result"></div>
+    <script>
+      // Modify captureImage function to use webcam-easy
+      function captureImage() {
+        // Take a photo from the webcam
+        let picture = webcam.snap();
+        console.log('Captured Image:', picture);
+
+        // Process the captured image using Tesseract.js
+        Tesseract.recognize(
+          picture,
+          "eng",
+          { 
+            logger: (info) => console.log(info) ,
+            rotate: 180, 
+            oem: 1,
+            psm: 6,
+          }
+        )
+          .then(({ data: { text } }) => {
+            const words = text.split(/\s+/).filter((word) => word.length >= 2);
+
+            // Display the OCR result
+            document.getElementById("result").innerText = words;
+          })
+          .catch((error) => {
+            console.error("Error performing OCR:", error);
+          });
+      }
+
+      // Initialize webcam-easy
+      const webcamElement = document.getElementById("webcam");
+      const canvasElement = document.getElementById("canvas");
+      const snapSoundElement = document.getElementById("snapSound");
+      const webcam = new Webcam(webcamElement, 'user', canvasElement, snapSoundElement);
+
+
+      // Start the webcam
+      webcam
+        .start()
+        .then((result) => {
+          console.log("Webcam started");
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      function uploadImage() {
+        const input = document.getElementById("imageInput");
+        const file = input.files[0];
+
+        if (file) {
+          const reader = new FileReader();
+
+          reader.onload = (event) => {
+            const imageBase64 = event.target.result;
+
+            // Process the uploaded image using Tesseract.js
+            Tesseract.recognize(
+              imageBase64,
+              "eng",
+              { logger: (info) => console.log(info) , 
+            oem: 1,
+            psm: 6, }
+            )
+              .then(({ data: { text } }) => {
+                const words = text.split(/\s+/).filter((word) => word.length >= 2);
+                // Display the OCR result
+                document.getElementById("result").innerText = words;
+              })
+              .catch((error) => {
+                console.error("Error performing OCR:", error);
+              });
+          };
+
+          reader.readAsDataURL(file);
+        } else {
+          console.error("No file selected");
+        }
+      }
+    </script>
+  </body>
+</html>
