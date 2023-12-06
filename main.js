@@ -59,7 +59,7 @@
     var croppedCanvas = cropCanvas(canvas, highlightX, highlightY, highlightWidth, highlightHeight);
 
     // Display the snapshot on the browser
-    // displaySnapshot(croppedCanvas.toDataURL('image/png'));
+    displaySnapshot(croppedCanvas.toDataURL('image/png'));
 
     // Recognize the cropped image
     recognizeImage(croppedCanvas.toDataURL('image/png'));
@@ -124,7 +124,7 @@
    * @param {string} image - The data URL of the image
    */
   function recognizeImage(image) {
-    Tesseract.recognize(image)
+    Tesseract.recognize(image, {lang: "eng"})
       .progress(message => document.getElementById('result').innerHTML = "<h3>Recognizing..</h3>")
       .then(function (result) {
         const filtered = filter_card(result.text);
