@@ -3,28 +3,20 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Computer Vision with Javascript</title>
+    <title>OCR v1.3</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         video,
         img {
             max-width: 100%;
         }
-
-        #overlayCanvas {
-            /* position: absolute; */
-            top: 0;
-            left: 0;
-			z-index: 4;
-        }
-
-		.highlight-area {
+        .highlight-area {
 			position: absolute;
 			border: 2px solid red;
 			top: 70px;
 			left: 150px;
-			width: 150px;
-			height: 200px;
+			width: 70px;
+			height: 40px;
 		}
     </style>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
@@ -39,11 +31,6 @@
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse float-right" id="navbarNavAltMarkup">
-            <div class="navbar-nav ">
-                <a class="nav-item nav-link" href="https://github.com/prashant-andani/ocr-javascript"><i class="fa fa-lg fa-github"></i> Github</a>
-            </div>
-        </div>
     </nav>
     <div class="container">
         <div class="row">
